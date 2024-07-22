@@ -1,6 +1,6 @@
 # pySQLExport
 
-A command line tool to interact with MySQL databases and export.
+A command line tool to interact with multiple databases and export to various formats.
 
 ## Installation
 
