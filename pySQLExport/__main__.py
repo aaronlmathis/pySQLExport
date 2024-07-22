@@ -18,6 +18,8 @@ class PySQLExport:
         self.db = None
         self.results = None
         self.query = ''
+        self.outfile = None
+        self.output = None
 
     def load_config(self):
         if self.interactive:
@@ -32,6 +34,8 @@ class PySQLExport:
             else:
                 print_colored("Config file not found. Please provide the database information.", "yellow")
                 self.get_db_info()
+
+            self.query = self.args.query
 
     def get_db_info(self):
         self.config['host'] = input("Enter database host: ")
@@ -65,41 +69,75 @@ class PySQLExport:
     def export_results(self):
         if self.args.output:
             if self.args.output not in ['csv']:
-                print_colored("Invalid output type. Current options are CSV.", "red")
-                sys.exit(1)
+                while True:
+                    print_colored("Invalid output type. Current options are CSV.", "red")
+                    print_colored("Please enter a supported file type.", 'yellow', end='')
+                    self.output = input()
+                    if self.output in ['csv']:
+                        break
+            self.output = self.args.output
+
             if not self.args.outfile:
                 print_colored("Please provide an output file path: ", "yellow", end='')
-                self.args.outfile = input()
-            try:
-                exporter = Export(self.results, self.args.outfile)
-                exporter.export(self.args.output)
-                print_colored(f"Results have been exported to {self.args.outfile}", "green")
-            except Exception as e:
-                print_colored(f"Failed to export results: {e}", "red")
-                sys.exit(1)
+                self.outfile = input()
+            else:
+                self.outfile = self.args.outfile
+
         else:
-            for row in self.results:
-                print(row)
+            while True:
+                print_colored("Please enter a supported file type: ", 'white', end='')
+                self.output = input()
+                if self.output in ['csv']:
+                    break
+                else:
+                    print_colored("Invalid output type. Current options are CSV.", "red")
+            
+            print_colored("Please provide an output file path: ", "white", end='')
+            self.outfile = input()
+        try:
+            exporter = Export(self.results, self.outfile)
+            exporter.export(self.output)
+        except Exception as e:
+            print_colored(f"Failed to export results: {e}", "red")
+            sys.exit(1)
+
+    def show_results(self):
+        print()
+        for row in self.results:
+            print_colored(row, 'cyan')
+
+    def get_query_summary(self):
+        return f"\nResults: Query on database '{self.config['database']}' returned {len(self.results)} rows."
+
 
     def interactive_menu(self):
         while True:
-            print_colored("1. Run a query", 'cyan')
-            print_colored("2. Export last query results", 'cyan')
-            print_colored("3. Exit", 'cyan')
-            choice = input("Choose an option: ").strip()
+            print("\n")
+            print_colored("1. Run a query", 'white')
+            print_colored("2. Export last query results", 'white')
+            print_colored("3. Print results of last query", 'white')
+            print_colored("4. Exit\n", 'white')
+            print_colored("Choose an option: ", 'white', end='')
+            choice = input().strip()
+            print()
             if choice == '1':
-                self.query = input("Enter SQL Query: ")
+                print_colored("\nEnter SQL Query: ", 'white', end='')
+                self.query = input()
                 self.execute_query()
-                for row in self.results:
-                    print(row)
+                print_colored(self.get_query_summary(), 'cyan')
             elif choice == '2':
                 if self.results:
                     self.export_results()
                 else:
-                    print_colored("No results to export. Run a query first.", "yellow")
+                    print_colored("\n\nNo results to export. Run a query first.\n", "yellow")
             elif choice == '3':
-                print("Exiting...")
-                break
+                if self.results:
+                    self.show_results()
+                else:
+                    print_colored("\n\nNo results to show. Run a query first.\n", "yellow")
+            elif choice == '4':
+                print_colored("\nExiting...\n", 'red')
+                break            
             else:
                 print_colored("Invalid choice. Please try again.", "red")
 
@@ -112,8 +150,12 @@ class PySQLExport:
             if self.interactive:
                 self.interactive_menu()
             else:
-                self.execute_query(self.args.query)
-                self.export_results()
+                self.execute_query()
+                if self.args.output:
+                    self.export_results()
+                else:
+                    self.show_results()
+
         except Exception as e:
             print_colored(f"An unexpected error occurred: {e}", "red")
             sys.exit(1)

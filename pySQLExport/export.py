@@ -16,6 +16,6 @@ class Export:
             with open(self.outfile, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(self.results)
-            print_colored(f"Results have been exported to {self.outfile}", "green")
+            print_colored(f"Results have been exported to {self.outfile} ({len(self.results)} rows) ", "green")
         except Exception as e:
             raise RuntimeError(f"Failed to export to CSV: {e}")
