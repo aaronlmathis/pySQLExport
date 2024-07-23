@@ -1,4 +1,6 @@
 mysql-connector-python
 pyyaml
 tabulate
-json
+pandas
+lxml
+

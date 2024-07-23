@@ -8,7 +8,8 @@ setup(
     install_requires=[
         "mysql-connector-python",
         "tabulate",
-        "json",
+        "pandas",
+        "lxml",
         "pyyaml"
     ],
     entry_points={
