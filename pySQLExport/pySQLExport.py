@@ -76,10 +76,10 @@ class PySQLExport:
 
     def export_results(self):
         if self.args.output:
-            if self.args.output not in ['csv', 'json']:
+            if self.args.output not in ['csv', 'json', 'html', 'xml']:
                 while True:
                     print_colored("Invalid output type. Current options are csv, json, html, xml.", "red")
-                    print_colored("Please enter a supported file type.", 'yellow', end='')
+                    print_colored("Please enter a supported file type (csv, json, html, xml): ", 'yellow', end='')
                     self.output = input()
                     if self.output in ['csv', 'json', 'html', 'xml']:
                         break
@@ -93,7 +93,7 @@ class PySQLExport:
 
         else:
             while True:
-                print_colored("Please enter a supported file type: ", 'white', end='')
+                print_colored("Please enter a supported file type (csv, json, html, xml): ", 'white', end='')
                 self.output = input()
                 if self.output in ['csv', 'json', 'html', 'xml']:
                     break
