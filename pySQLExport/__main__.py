@@ -1,6 +1,7 @@
 import sys
 import getpass
 import os
+from tabulate import tabulate
 from pySQLExport.cli import CLI
 from pySQLExport.config import load_config
 from pySQLExport.database import Database
@@ -20,6 +21,7 @@ class PySQLExport:
         self.query = ''
         self.outfile = None
         self.output = None
+        self.columns = None
 
     def load_config(self):
         if self.interactive:
@@ -61,14 +63,14 @@ class PySQLExport:
     def execute_query(self):
         try:
             query = Query(self.db)
-            self.results = query.execute(self.query)
+            self.results,  self.columns = query.execute(self.query)
         except Exception as e:
             print_colored(f"Failed to execute query: {e}", "red")
             sys.exit(1)
 
     def export_results(self):
         if self.args.output:
-            if self.args.output not in ['csv']:
+            if self.args.output not in ['csv', 'json']:
                 while True:
                     print_colored("Invalid output type. Current options are CSV.", "red")
                     print_colored("Please enter a supported file type.", 'yellow', end='')
@@ -87,24 +89,24 @@ class PySQLExport:
             while True:
                 print_colored("Please enter a supported file type: ", 'white', end='')
                 self.output = input()
-                if self.output in ['csv']:
+                if self.output in ['csv', 'json']:
                     break
                 else:
-                    print_colored("Invalid output type. Current options are CSV.", "red")
+                    print_colored("Invalid output type. Current options are CSV and JSON.", "red")
             
             print_colored("Please provide an output file path: ", "white", end='')
             self.outfile = input()
         try:
-            exporter = Export(self.results, self.outfile)
+            exporter = Export(self.results, self.outfile, self.columns)
             exporter.export(self.output)
         except Exception as e:
             print_colored(f"Failed to export results: {e}", "red")
             sys.exit(1)
 
     def show_results(self):
-        print()
-        for row in self.results:
-            print_colored(row, 'cyan')
+        if self.results and self.columns:
+            print_colored(tabulate(self.results, headers=self.columns, tablefmt='grid'), 'cyan')
+
 
     def get_query_summary(self):
         return f"\nResults: Query on database '{self.config['database']}' returned {len(self.results)} rows."
@@ -114,8 +116,8 @@ class PySQLExport:
         while True:
             print("\n")
             print_colored("1. Run a query", 'white')
-            print_colored("2. Export last query results", 'white')
-            print_colored("3. Print results of last query", 'white')
+            print_colored("2. Print results of last query", 'white')
+            print_colored("3. Export results of last query", 'white')
             print_colored("4. Exit\n", 'white')
             print_colored("Choose an option: ", 'white', end='')
             choice = input().strip()
@@ -127,14 +129,14 @@ class PySQLExport:
                 print_colored(self.get_query_summary(), 'cyan')
             elif choice == '2':
                 if self.results:
+                    self.show_results()
+                else:
+                    print_colored("\n\nNo results to show. Run a query first.\n", "yellow")                
+            elif choice == '3':
+                if self.results:
                     self.export_results()
                 else:
                     print_colored("\n\nNo results to export. Run a query first.\n", "yellow")
-            elif choice == '3':
-                if self.results:
-                    self.show_results()
-                else:
-                    print_colored("\n\nNo results to show. Run a query first.\n", "yellow")
             elif choice == '4':
                 print_colored("\nExiting...\n", 'red')
                 break            

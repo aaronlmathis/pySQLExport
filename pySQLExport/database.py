@@ -14,8 +14,9 @@ class Database:
         cursor = self.connection.cursor()
         cursor.execute(query)
         results = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
         cursor.close()
-        return results
+        return results, columns
     
     def close(self):
         self.connection.close()

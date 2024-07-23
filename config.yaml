@@ -1,4 +1,4 @@
 host: "localhost"
 user: "root"
-database: "employees"
+database: "classicmodels"
 port: 3306

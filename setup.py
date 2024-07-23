@@ -7,6 +7,8 @@ setup(
     include_package_data=True,
     install_requires=[
         "mysql-connector-python",
+        "tabulate",
+        "json",
         "pyyaml"
     ],
     entry_points={
