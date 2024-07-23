@@ -24,6 +24,11 @@ class PySQLExport:
         self.output = None
         self.columns = None
 
+        if not self.interactive:
+            if not self.args.config_file or not self.args.query:
+                print_colored("Error: Non-interactive mode requires both --config-file and --query arguments.", "red")
+                sys.exit(1)
+
     def load_config(self):
         if self.interactive:
             self.get_db_info()
