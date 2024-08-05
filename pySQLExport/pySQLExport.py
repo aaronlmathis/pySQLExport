@@ -5,7 +5,6 @@ from tabulate import tabulate
 from pySQLExport.cli import CLI
 from pySQLExport.config import load_config
 from pySQLExport.database import Database
-from pySQLExport.query import Query
 from pySQLExport.export import Export
 from pySQLExport.utils import print_colored
 
@@ -68,8 +67,7 @@ class PySQLExport:
 
     def execute_query(self):
         try:
-            query = Query(self.db)
-            self.results,  self.columns = query.execute(self.query)
+            self.results,  self.columns = self.db.execute(self.query)
         except Exception as e:
             print_colored(f"Failed to execute query: {e}", "red")
             sys.exit(1)
